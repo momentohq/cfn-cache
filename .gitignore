@@ -1,0 +1,19 @@
+# macOS
+.DS_Store
+._*
+
+# our logs
+rpdk.log*
+
+#compiled file
+bin/
+
+#vender
+vendor/
+
+# contains credentials
+sam-tests/
+
+.idea
+.hypothesis
+

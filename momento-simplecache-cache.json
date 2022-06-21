@@ -1,0 +1,51 @@
+{
+    "typeName": "Momento::SimpleCache::Cache",
+    "description": "Creates a Momento serverless cache.",
+    "sourceUrl": "https://github.com/momentohq/cfn-cache.git",
+    "properties": {
+        "Name": {
+            "description": "Name of the cache to be created.",
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 255,
+            "pattern": "^[a-zA-Z0-9-_.]{3,255}$"
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "Name"
+    ],
+    "primaryIdentifier": [
+        "/properties/Name"
+    ],
+    "createOnlyProperties": [
+        "/properties/Name"
+    ],
+    "handlers": {
+        "create": {
+            "permissions": [
+                "secretsmanager:GetSecretValue"
+            ]
+        },
+        "read": {
+            "permissions": [
+                "secretsmanager:GetSecretValue"
+            ]
+        },
+        "update": {
+            "permissions": [
+                "secretsmanager:GetSecretValue"
+            ]
+        },
+        "delete": {
+            "permissions": [
+                "secretsmanager:GetSecretValue"
+            ]
+        },
+        "list": {
+            "permissions": [
+                "secretsmanager:GetSecretValue"
+            ]
+        }
+    }
+}
