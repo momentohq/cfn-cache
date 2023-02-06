@@ -54,6 +54,7 @@ Resources:
     Type: Momento::SimpleCache::Cache
     Properties:
       Name: test-cache
+      AuthToken: !Sub '{{resolve:secretsmanager:/momento/test-application/dev/token}}'
 ```
 
 Deploy test stack
