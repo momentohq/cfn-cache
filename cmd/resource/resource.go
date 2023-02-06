@@ -17,7 +17,7 @@ const secretName = "/momento/authToken"
 func Create(req handler.Request, prevModel *Model, currentModel *Model) (handler.ProgressEvent, error) {
 	client, err := getMomentoClient(currentModel)
 	if err != nil {
-		return handler.NewFailedEvent(fmt.Errorf("error initializing client %w %s", err, *currentModel.AuthToken)), nil
+		return handler.NewFailedEvent(fmt.Errorf("error initializing client %w", err)), nil
 	}
 	err = client.CreateCache(context.Background(), &momento.CreateCacheRequest{
 		CacheName: *currentModel.Name,
