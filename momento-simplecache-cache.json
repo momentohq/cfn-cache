@@ -9,11 +9,16 @@
             "minLength": 3,
             "maxLength": 255,
             "pattern": "^[a-zA-Z0-9-_.]{3,255}$"
+        },
+        "AuthToken": {
+            "description": "Momento AuthToken to used to manage cache's",
+            "type": "string"
         }
     },
     "additionalProperties": false,
     "required": [
-        "Name"
+        "Name",
+        "AuthToken"
     ],
     "primaryIdentifier": [
         "/properties/Name"
@@ -23,29 +28,19 @@
     ],
     "handlers": {
         "create": {
-            "permissions": [
-                "secretsmanager:GetSecretValue"
-            ]
+            "permissions": []
         },
         "read": {
-            "permissions": [
-                "secretsmanager:GetSecretValue"
-            ]
+            "permissions": []
         },
         "update": {
-            "permissions": [
-                "secretsmanager:GetSecretValue"
-            ]
+            "permissions": []
         },
         "delete": {
-            "permissions": [
-                "secretsmanager:GetSecretValue"
-            ]
+            "permissions": []
         },
         "list": {
-            "permissions": [
-                "secretsmanager:GetSecretValue"
-            ]
+            "permissions": []
         }
     }
 }

@@ -1,14 +1,13 @@
 package resource
 
 import (
-	"errors"
+	"context"
 	"fmt"
-
-	"github.com/momentohq/cfn-cache/internal/utility"
+	"github.com/momentohq/client-sdk-go/auth"
+	"github.com/momentohq/client-sdk-go/config"
 
 	"github.com/aws-cloudformation/cloudformation-cli-go-plugin/cfn/handler"
 	"github.com/aws/aws-sdk-go/service/cloudformation"
-	"github.com/aws/aws-sdk-go/service/secretsmanager"
 	"github.com/momentohq/client-sdk-go/momento"
 )
 
@@ -16,11 +15,11 @@ const secretName = "/momento/authToken"
 
 // Create handles the Create event from the Cloudformation service.
 func Create(req handler.Request, prevModel *Model, currentModel *Model) (handler.ProgressEvent, error) {
-	client, err := getMomentoClient(req)
+	client, err := getMomentoClient(currentModel)
 	if err != nil {
-		return handler.ProgressEvent{}, errors.New("error initializing client")
+		return handler.NewFailedEvent(fmt.Errorf("error initializing client %w %s", err, *currentModel.AuthToken)), nil
 	}
-	err = client.CreateCache(&momento.CreateCacheRequest{
+	err = client.CreateCache(context.Background(), &momento.CreateCacheRequest{
 		CacheName: *currentModel.Name,
 	})
 	if err != nil {
@@ -47,7 +46,7 @@ func Create(req handler.Request, prevModel *Model, currentModel *Model) (handler
 
 // Read handles the Read event from the Cloudformation service.
 func Read(req handler.Request, prevModel *Model, currentModel *Model) (handler.ProgressEvent, error) {
-	client, err := getMomentoClient(req)
+	client, err := getMomentoClient(currentModel)
 	if err != nil {
 		return handleGeneralError(fmt.Sprintf("error initializing momento client %+v", err))
 	}
@@ -74,7 +73,7 @@ func Read(req handler.Request, prevModel *Model, currentModel *Model) (handler.P
 
 // Update handles the Update event from the Cloudformation service.
 func Update(req handler.Request, prevModel *Model, currentModel *Model) (handler.ProgressEvent, error) {
-	client, err := getMomentoClient(req)
+	client, err := getMomentoClient(currentModel)
 	if err != nil {
 		return handleGeneralError(fmt.Sprintf("error initializing momento client %+v", err))
 	}
@@ -101,7 +100,7 @@ func Update(req handler.Request, prevModel *Model, currentModel *Model) (handler
 
 // Delete handles the Delete event from the Cloudformation service.
 func Delete(req handler.Request, prevModel *Model, currentModel *Model) (handler.ProgressEvent, error) {
-	client, err := getMomentoClient(req)
+	client, err := getMomentoClient(currentModel)
 	if err != nil {
 		return handleGeneralError(fmt.Sprintf("error initializing momento client %+v", err))
 	}
@@ -120,7 +119,7 @@ func Delete(req handler.Request, prevModel *Model, currentModel *Model) (handler
 		}, nil
 	}
 
-	err = client.DeleteCache(&momento.DeleteCacheRequest{
+	err = client.DeleteCache(context.Background(), &momento.DeleteCacheRequest{
 		CacheName: *currentModel.Name,
 	})
 	if err != nil {
@@ -134,7 +133,7 @@ func Delete(req handler.Request, prevModel *Model, currentModel *Model) (handler
 
 // List handles the List event from the Cloudformation service.
 func List(req handler.Request, prevModel *Model, currentModel *Model) (handler.ProgressEvent, error) {
-	client, err := getMomentoClient(req)
+	client, err := getMomentoClient(currentModel)
 	if err != nil {
 		return handleGeneralError(fmt.Sprintf("error initializing momento client %+v", err))
 	}
@@ -158,26 +157,22 @@ func List(req handler.Request, prevModel *Model, currentModel *Model) (handler.P
 	}, nil
 }
 
-func getMomentoClient(req handler.Request) (momento.ScsClient, error) {
-	authToken, err := utility.GetSecret(secretsmanager.New(req.Session), secretName)
+func getMomentoClient(currentModel *Model) (momento.ScsClient, error) {
+	creds, err := auth.NewStringMomentoTokenProvider(*currentModel.AuthToken)
 	if err != nil {
 		return nil, err
 	}
-	client, err := momento.NewSimpleCacheClient(
-		authToken,
-		600, // TTL is irrelevant we are just doing control plane actions in this resource
-	)
-	if err != nil {
-		return nil, err
-	}
-	return client, nil
+	return momento.NewSimpleCacheClient(&momento.SimpleCacheClientProps{
+		Configuration:      config.LatestLaptopConfig(),
+		CredentialProvider: creds,
+	})
 }
 
 func findCache(client momento.ScsClient, name string) (bool, error) {
 	token := ""
 	foundCache := false
 	for {
-		listCacheResp, err := client.ListCaches(&momento.ListCachesRequest{NextToken: token})
+		listCacheResp, err := client.ListCaches(context.Background(), &momento.ListCachesRequest{NextToken: token})
 		if err != nil {
 			return false, err
 		}
