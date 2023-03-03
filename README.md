@@ -4,39 +4,25 @@ Official cloudformation resource to manage momento serverless caches.
 
 Please see our [Docs](docs/README.md) page for full end user docs and usage instructions for using this resource in your templates.
 
-### Development
+## Registering and Using this resource in your account
 
-**Pre-Reqs:**
-1. Python version 3.6 or above.
-2. [AWS CLI](https://aws.amazon.com/cli/)
-3. [SAM CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-install.html)
-4. [CFN CLI](https://docs.aws.amazon.com/cloudformation-cli/latest/userguide/what-is-cloudformation-cli.html)
+To use this resource in your account it currently needs to be registered as a private cloudformation extension 
+per AWS account and region you want to use it in. You will need to install the AWS 
+[CFN CLI](https://docs.aws.amazon.com/cloudformation-cli/latest/userguide/what-is-cloudformation-cli.html) locally
+to submit the resource.
 
-Build resource
-```
-make
-```
 
-Start Local lambda 
+Once you have the CFN-CLI installed and have AWS credentials for the account you want to deploy you can submit this 
+resource to be registered in your account in region of your choice.
 ```
-sam local start-lambda
-```
-
-Run Tests
-```
-cfn test
-```
-
-### Deployment
-
-Deploy Resource to your local account
-```
-cfn submit -v
+cfn submit -v --region us-east-1
 ```
 
 ### Usage
 
-Bootstrap account with auth token in secrets manager
+Once you have the the `Momento::SimpleCache::Cache` cfn extension installed you can start provisioning caches in your account
+
+Bootstrap account with your momento auth token in secrets manager
 ```
 export MOMENTO_AUTH_TOKEN=eyjbTestToken
 aws secretsmanager create-secret \
@@ -64,4 +50,30 @@ aws cloudformation create-stack \
     --region us-west-2 \
     --template-body "file://test.yml" \
     --stack-name "test-cache-stack"
+```
+
+
+### Development
+
+If you want to contribute to this repo and develop on this resource please follow these instructions
+
+**Pre-Reqs:**
+1. Python version 3.6 or above.
+2. [AWS CLI](https://aws.amazon.com/cli/)
+3. [SAM CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-install.html)
+4. [CFN CLI](https://docs.aws.amazon.com/cloudformation-cli/latest/userguide/what-is-cloudformation-cli.html)
+
+Build resource
+```
+make
+```
+
+Start Local lambda
+```
+sam local start-lambda
+```
+
+Run Tests
+```
+cfn test
 ```
