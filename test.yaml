@@ -1,8 +1,0 @@
-AWSTemplateFormatVersion: 2010-09-09
-
-Resources:
-  MyCache:
-    Type: Momento::SimpleCache::Cache
-    Properties:
-      Name: test-cache-8
-      AuthToken: '{{resolve:secretsmanager:/momento/authToken}}'
