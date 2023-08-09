@@ -3,15 +3,15 @@ package resource
 import (
 	"context"
 	"fmt"
-	"github.com/momentohq/client-sdk-go/auth"
-	"github.com/momentohq/client-sdk-go/config"
+	"os"
 
 	"github.com/aws-cloudformation/cloudformation-cli-go-plugin/cfn/handler"
 	"github.com/aws/aws-sdk-go/service/cloudformation"
+	"github.com/momentohq/client-sdk-go/auth"
+	"github.com/momentohq/client-sdk-go/config"
 	"github.com/momentohq/client-sdk-go/momento"
+	"github.com/momentohq/client-sdk-go/responses"
 )
-
-const secretName = "/momento/authToken"
 
 // Create handles the Create event from the Cloudformation service.
 func Create(req handler.Request, prevModel *Model, currentModel *Model) (handler.ProgressEvent, error) {
@@ -19,29 +19,27 @@ func Create(req handler.Request, prevModel *Model, currentModel *Model) (handler
 	if err != nil {
 		return handler.NewFailedEvent(fmt.Errorf("error initializing client %w", err)), nil
 	}
-	err = client.CreateCache(context.Background(), &momento.CreateCacheRequest{
+	rsp, err := client.CreateCache(context.Background(), &momento.CreateCacheRequest{
 		CacheName: *currentModel.Name,
 	})
 	if err != nil {
-		if momentoErr, ok := err.(momento.MomentoError); ok {
-			if momentoErr.Code() != momento.AlreadyExistsError {
-				return handleGeneralError(fmt.Sprintf("error occurred creating cache %+v", err))
-			} else {
-				return handler.ProgressEvent{
-					OperationStatus:  handler.Failed,
-					HandlerErrorCode: cloudformation.HandlerErrorCodeAlreadyExists,
-					Message:          fmt.Sprintf("cache with name %s already exists", *currentModel.Name),
-				}, nil
-			}
-		}
+		return handleGeneralError(fmt.Sprintf("error occurred creating cache %+v", err))
 	}
-	response := handler.ProgressEvent{
-		OperationStatus: handler.Success,
-		ResourceModel:   currentModel,
+	switch rsp.(type) {
+	case *responses.CreateCacheAlreadyExists:
+		return handler.ProgressEvent{
+			OperationStatus:  handler.Failed,
+			HandlerErrorCode: cloudformation.HandlerErrorCodeAlreadyExists,
+			Message:          fmt.Sprintf("cache with name %s already exists", *currentModel.Name),
+		}, nil
+	case *responses.CreateCacheSuccess:
+		return handler.ProgressEvent{
+			OperationStatus: handler.Success,
+			ResourceModel:   currentModel,
+		}, nil
+	default:
+		return handleGeneralError(fmt.Sprintf("unexpected response type from create cache api request %T", rsp))
 	}
-
-	return response, nil
-
 }
 
 // Read handles the Read event from the Cloudformation service.
@@ -119,7 +117,7 @@ func Delete(req handler.Request, prevModel *Model, currentModel *Model) (handler
 		}, nil
 	}
 
-	err = client.DeleteCache(context.Background(), &momento.DeleteCacheRequest{
+	_, err = client.DeleteCache(context.Background(), &momento.DeleteCacheRequest{
 		CacheName: *currentModel.Name,
 	})
 	if err != nil {
@@ -157,18 +155,21 @@ func List(req handler.Request, prevModel *Model, currentModel *Model) (handler.P
 	}, nil
 }
 
-func getMomentoClient(currentModel *Model) (momento.ScsClient, error) {
-	creds, err := auth.NewStringMomentoTokenProvider(*currentModel.AuthToken)
+func getMomentoClient(currentModel *Model) (momento.CacheClient, error) {
+	var credProvider auth.CredentialProvider
+	var err error
+	if os.Getenv("MODE") == "TEST" {
+		credProvider, err = auth.NewEnvMomentoTokenProvider("MOMENTO_AUTH_TOKEN")
+	} else {
+		credProvider, err = auth.NewStringMomentoTokenProvider(*currentModel.AuthToken)
+	}
 	if err != nil {
 		return nil, err
 	}
-	return momento.NewSimpleCacheClient(&momento.SimpleCacheClientProps{
-		Configuration:      config.LatestLaptopConfig(),
-		CredentialProvider: creds,
-	})
+	return momento.NewCacheClient(config.LaptopLatest(), credProvider, 1)
 }
 
-func findCache(client momento.ScsClient, name string) (bool, error) {
+func findCache(client momento.CacheClient, name string) (bool, error) {
 	token := ""
 	foundCache := false
 	for {
@@ -176,16 +177,20 @@ func findCache(client momento.ScsClient, name string) (bool, error) {
 		if err != nil {
 			return false, err
 		}
-		for _, cacheInfo := range listCacheResp.Caches() {
-			if cacheInfo.Name() == name {
-				foundCache = true
+		if r, ok := listCacheResp.(*responses.ListCachesSuccess); ok {
+			r.Caches()
+			for _, cacheInfo := range r.Caches() {
+				if cacheInfo.Name() == name {
+					foundCache = true
+					break
+				}
+			}
+			token = r.NextToken()
+			if token == "" {
 				break
 			}
 		}
-		token = listCacheResp.NextToken()
-		if token == "" {
-			break
-		}
+
 	}
 	return foundCache, nil
 }
