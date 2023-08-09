@@ -20,7 +20,7 @@ cfn submit -v --region us-east-1
 
 ### Usage
 
-Once you have the the `Momento::SimpleCache::Cache` cfn extension installed you can start provisioning caches in your account
+Once you have the `Momento::SimpleCache::Cache` cfn extension installed you can start provisioning caches in your account
 
 Bootstrap account with your momento auth token in secrets manager
 ```
