@@ -15,7 +15,8 @@ to submit the resource.
 Once you have the CFN-CLI installed and have AWS credentials for the account you want to deploy you can submit this 
 resource to be registered in your account in region of your choice.
 ```
-cfn submit -v --region us-east-1
+make build
+cfn submit  --set-default -v --region us-east-1
 ```
 
 ### Usage
