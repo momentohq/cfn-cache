@@ -1,6 +1,6 @@
 .PHONY: build test clean
 
-build:
+build: clean
 	env GOOS=linux GOARCH=amd64 TAGS=logging go build -ldflags="-s -w" -tags="$(TAGS)" -o bin/handler cmd/main.go
 
 test:
