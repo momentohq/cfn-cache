@@ -35,7 +35,9 @@ func Create(req handler.Request, prevModel *Model, currentModel *Model) (handler
 	case *responses.CreateCacheSuccess:
 		return handler.ProgressEvent{
 			OperationStatus: handler.Success,
-			ResourceModel:   currentModel,
+			ResourceModel: &Model{
+				Name: currentModel.Name,
+			},
 		}, nil
 	default:
 		return handleGeneralError(fmt.Sprintf("unexpected response type from create cache api request %T", rsp))
@@ -60,12 +62,16 @@ func Read(req handler.Request, prevModel *Model, currentModel *Model) (handler.P
 			OperationStatus:  handler.Failed,
 			Message:          "Cache NotFound",
 			HandlerErrorCode: cloudformation.HandlerErrorCodeNotFound,
-			ResourceModel:    currentModel,
+			ResourceModel: &Model{
+				Name: currentModel.Name,
+			},
 		}, nil
 	}
 	return handler.ProgressEvent{
 		OperationStatus: handler.Success,
-		ResourceModel:   currentModel,
+		ResourceModel: &Model{
+			Name: currentModel.Name,
+		},
 	}, nil
 }
 
@@ -87,12 +93,16 @@ func Update(req handler.Request, prevModel *Model, currentModel *Model) (handler
 			OperationStatus:  handler.Failed,
 			Message:          "Cache NotFound cant update",
 			HandlerErrorCode: cloudformation.HandlerErrorCodeNotFound,
-			ResourceModel:    currentModel,
+			ResourceModel: &Model{
+				Name: currentModel.Name,
+			},
 		}, nil
 	}
 	return handler.ProgressEvent{
 		OperationStatus: handler.Success,
-		ResourceModel:   currentModel,
+		ResourceModel: &Model{
+			Name: currentModel.Name,
+		},
 	}, nil
 }
 
@@ -113,7 +123,9 @@ func Delete(req handler.Request, prevModel *Model, currentModel *Model) (handler
 			OperationStatus:  handler.Failed,
 			Message:          "Cache NotFound",
 			HandlerErrorCode: cloudformation.HandlerErrorCodeNotFound,
-			ResourceModel:    currentModel,
+			ResourceModel: &Model{
+				Name: currentModel.Name,
+			},
 		}, nil
 	}
 
@@ -151,7 +163,9 @@ func List(req handler.Request, prevModel *Model, currentModel *Model) (handler.P
 	}
 	return handler.ProgressEvent{
 		OperationStatus: handler.Success,
-		ResourceModels:  []interface{}{currentModel},
+		ResourceModels: []interface{}{&Model{
+			Name: currentModel.Name,
+		}},
 	}, nil
 }
 

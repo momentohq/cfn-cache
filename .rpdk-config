@@ -2,21 +2,12 @@
     "artifact_type": "RESOURCE",
     "typeName": "Momento::SimpleCache::Cache",
     "language": "go",
-    "runtime": "go1.x",
-    "entrypoint": "handler",
-    "testEntrypoint": "handler",
+    "runtime": "provided.al2",
+    "entrypoint": "bootstrap",
+    "testEntrypoint": "bootstrap",
     "settings": {
-        "version": false,
-        "subparser_name": null,
-        "verbose": 0,
-        "force": false,
-        "type_name": null,
-        "artifact_type": null,
-        "endpoint_url": null,
-        "region": null,
-        "target_schemas": [],
-        "import_path": "github.com/momentohq/cfn-cache",
+        "import_path": "github.com/aws-cloudformation/cloudformation-cli-go-plugin/examples/github-repo",
         "protocolVersion": "2.0.0",
-        "pluginVersion": "2.0.4"
+        "pluginVersion": "2.0.0"
     }
 }

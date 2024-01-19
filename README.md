@@ -64,6 +64,19 @@ If you want to contribute to this repo and develop on this resource please follo
 3. [SAM CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-install.html)
 4. [CFN CLI](https://docs.aws.amazon.com/cloudformation-cli/latest/userguide/what-is-cloudformation-cli.html)
 
+
+Set up a local json file to pass env vars in for testings called `local-e2e-test.json`
+
+Its contents should look like this:
+```json
+{
+  "TypeFunction": {
+    "MODE": "TEST",
+    "MOMENTO_AUTH_TOKEN": "REPLACE_ME"
+  }
+}
+```
+
 Build resource
 ```
 make
@@ -71,7 +84,7 @@ make
 
 Start Local lambda
 ```
-sam local start-lambda
+sam local start-lambda -n local-e2e-test.json
 ```
 
 Run Tests

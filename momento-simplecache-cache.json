@@ -20,6 +20,9 @@
         "Name",
         "AuthToken"
     ],
+    "writeOnlyProperties": [
+        "/properties/AuthToken"
+    ],
     "primaryIdentifier": [
         "/properties/Name"
     ],

@@ -6,9 +6,10 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/momentohq/cfn-cache/cmd/resource"
+
 	"github.com/aws-cloudformation/cloudformation-cli-go-plugin/cfn"
 	"github.com/aws-cloudformation/cloudformation-cli-go-plugin/cfn/handler"
-	"github.com/momentohq/cfn-cache/cmd/resource"
 )
 
 // Handler is a container for the CRUDL actions exported by resources
