@@ -19,3 +19,5 @@ sam-tests/
 
 .zip
 
+# Contains momento auth token for local integration testing dont check in
+local-e2e-test.json
